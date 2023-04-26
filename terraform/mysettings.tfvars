@@ -24,6 +24,13 @@ allowed_ssh_cidr = ""
 key_name = ""       # the filename of the private SSL key 
 public_key = ""     # the matching public key (ssh-keygen -y -f your-key-pair.pem) 
 
+
+# Example: 
+# vpc_id = "vpc-0381e9f82c9ae68e7"
+
+vpc_id = "vpc-0381e9f82c9ae68e7" 		# the ID of an existing VPC to deploy resources within
+
+
 #------------------------------------------------------------
 
 

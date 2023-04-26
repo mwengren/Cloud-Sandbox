@@ -53,6 +53,8 @@ resource "aws_placement_group" "cloud_sandbox_placement_group" {
 }
 
 resource "aws_vpc" "cloud_vpc" {
+   # we only will create this vpc if vpc_id is not passed in as a variable
+   count = var.vpc_id ? 0 : 1
    # This is a large vpc, 256 x 256 IPs available
    cidr_block = "10.0.0.0/16"
    enable_dns_support = true
@@ -64,19 +66,21 @@ resource "aws_vpc" "cloud_vpc" {
 }
 
 resource "aws_subnet" "main" {
-  vpc_id   = aws_vpc.cloud_vpc.id
-  # This subnet will allow 256 IPs
-  cidr_block = "10.0.0.0/24"
-  map_public_ip_on_launch = true
-  availability_zone = var.availability_zone
+   count = var.vpc_id ? 0 : 1
+   vpc_id   = aws_vpc.cloud_vpc[0].id
+   # This subnet will allow 256 IPs
+   cidr_block = "10.0.0.0/24"
+   map_public_ip_on_launch = true
+   availability_zone = var.availability_zone
    tags = {
       Name = "${var.name_tag} Subnet"
       Project = var.project_tag
-    }
+   }
 }
 
 resource "aws_internet_gateway" "gw" {
-  vpc_id = aws_vpc.cloud_vpc.id
+   count = var.vpc_id ? 0 : 1
+   vpc_id = aws_vpc.cloud_vpc[0].id
    tags = {
       Name = "${var.name_tag} Internet Gateway"
       Project = var.project_tag
@@ -84,21 +88,45 @@ resource "aws_internet_gateway" "gw" {
 }
 
 resource "aws_route_table" "default" {
-    vpc_id = aws_vpc.cloud_vpc.id
+   count = var.vpc_id ? 0 : 1
+   vpc_id = aws_vpc.cloud_vpc[0].id
 
-    route {
-      cidr_block = "0.0.0.0/0"
-      gateway_id = aws_internet_gateway.gw.id
-    }
+   route {
+     cidr_block = "0.0.0.0/0"
+     gateway_id = aws_internet_gateway.gw.id
+   }
    tags = {
-      Name = "${var.name_tag} Route Table"
-      Project = var.project_tag
-    }
+     Name = "${var.name_tag} Route Table"
+     Project = var.project_tag
+   }
 }
 
 resource "aws_route_table_association" "main" {
-  subnet_id = aws_subnet.main.id
-  route_table_id = aws_route_table.default.id
+  count = var.vpc_id ? 0 : 1
+  subnet_id = aws_subnet.main[0].id
+  route_table_id = aws_route_table.default[0].id
+}
+
+
+data "aws_vpc" "pre-provisioned" {
+  # the pre-provisioned VPC will be returned if vpc_id matches an existing VPC
+  count = var.vpc_id != null ? 1 : 0
+  id = var.vpc_id
+}
+
+# this assigns the local.vpc variable according to which VPC is relevant (pre-existing one or one created here):
+locals {
+  vpc = (
+    var.vpc_id != null ?
+    {
+      id         = data.aws_vpc.pre-provisioned.id
+      cidr_block = data.aws_vpc.pre-provisioned.cidr_block
+    } : 
+    {
+      id         = aws_vpc.cloud_vpc[0].id
+      cidr_block = aws_vpc.cloud_vpc[0].vpc_cidr_block
+    }
+  )
 }
 
 resource "aws_efs_file_system" "main_efs" {
