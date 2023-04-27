@@ -27,8 +27,13 @@ public_key = ""     # the matching public key (ssh-keygen -y -f your-key-pair.pe
 
 # Example: 
 # vpc_id = "vpc-0381e9f82c9ae68e7"
+vpc_id = "" 		# the ID of an existing VPC to deploy resources to
 
-vpc_id = "vpc-0381e9f82c9ae68e7" 		# the ID of an existing VPC to deploy resources within
+
+# Example: 
+# subnet_id = "subnet-01ce99f9006e8ed06"
+subnet_id = ""		# the ID of an existing Subnet within the VPC to deploy resources to
+
 
 
 #------------------------------------------------------------

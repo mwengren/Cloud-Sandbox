@@ -71,8 +71,23 @@ variable "vpc_id" {
   default = null
 
   validation {
-    condition     = length(var.vpc_id) > 4 && substr(var.vpc_id, 0, 4) == "vpc-"
+    #condition     = var.vpc_id == null || ( coalesce(length(var.vpc_id), 4) > 4 && coalesce(substr(var.vpc_id, 0, 4), "vpc-") == "vpc-" )
+    condition     = var.vpc_id == null ? false : ( length(var.vpc_id) > 4 && substr(var.vpc_id, 0, 4) == "vpc-" )
     error_message = "The vpc_id value must start with \"vpc-\"."
+  }
+
+}
+
+
+variable "subnet_id" {
+  description = "The ID of an existing Subnect within the target VPC.  Must be specified if using an exsiting VPC."
+  type = string
+  default = null
+
+  validation {
+    #condition     = var.subnet_id == null || (length(var.subnet_id) > 7 && substr(var.subnet_id, 0, 7) == "subnet-")
+    condition     = var.subnet_id == null ? false : ( length(var.subnet_id) > 7 && substr(var.subnet_id, 0, 7) == "subnet-" )
+    error_message = "The subnet_id value must start with \"subnet-\"."
   }
 
 }
