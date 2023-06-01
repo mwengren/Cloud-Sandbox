@@ -79,7 +79,7 @@ variable "vpc_id" {
 
 
 variable "subnet_id" {
-  description = "The ID of an existing Subnect within the target VPC.  Must be specified if using an exsiting VPC."
+  description = "The ID of an existing Subnet within the target VPC to use.  If not provided a Subnet will be created."
   type = string
   default = null
 
@@ -90,6 +90,31 @@ variable "subnet_id" {
 
 }
 
+variable "subnet_cidr" {
+  description = "An explicit CIDR block to use for the created Subnet, if subnet_id is not specified.  Optional."
+  type = string
+  default = null
+
+  validation {
+    condition     = var.subnet_cidr == null ? true : can(cidrhost(var.subnet_cidr, 0))
+    error_message = "The subnet_cidr variable must be a valid CIDR notation (e.g. \"10.0.0.0/24\")."
+  }
+
+}
+
+
+variable "head_node_ip" {
+  description = "The IP address to assign to the network interface for the head node instance.  Should be from the VPC's publicly-accessible CIDR range."
+  type = string
+  default = null
+  nullable = true
+
+  #validation {
+  #  condition     = var.head_node_ip == null ? true : can(cidrhost(var.head_node_ip, 0))
+  #  error_message = "The head_node_ip variable must be a valid IP address (e.g. \"137.75.95.224\")."
+  #}
+
+}
 
 variable "managed_policies" {
   description = "The attached IAM policies granting machine permissions"
