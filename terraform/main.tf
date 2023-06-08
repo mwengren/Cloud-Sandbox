@@ -378,11 +378,11 @@ resource "aws_instance" "head_node" {
   user_data = data.template_file.init_instance.rendered
 
   # associate_public_ip_address = true
-  network_interface {
-    device_index = 0    # MUST be 0
-    # network_interface_id = var.use_efa == true ? aws_network_interface.efa_network_adapter.id : aws_network_interface.standard.id
-    network_interface_id = aws_network_interface.head_node.id
-  }
+#  network_interface {
+#    device_index = 0    # MUST be 0
+#    # network_interface_id = var.use_efa == true ? aws_network_interface.efa_network_adapter.id : aws_network_interface.standard.id
+#    network_interface_id = aws_network_interface.head_node.id
+#  }
 
   # This logic isn't perfect since some ena instance types can be in a placement group also
   placement_group = var.use_efa == true ? aws_placement_group.cloud_sandbox_placement_group.id : null
@@ -437,10 +437,10 @@ resource "aws_network_interface" "head_node" {
   #private_ips = [var.head_node_ip]
 
   # handle here or in instance create or via aws_network_interface_attachment?
-#  attachment {
-#    instance     = aws_instance.head_node.id
-#    device_index = 1
-#  }
+  attachment {
+    instance     = aws_instance.head_node.id
+    device_index = 1
+  }
 
 }
 
