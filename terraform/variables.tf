@@ -102,6 +102,12 @@ variable "subnet_cidr" {
 
 }
 
+variable "subnet_quartile" {
+  description = "If a specific subnet_cidr is not provided, the quartile of VPC address space to use for the created subnet.  Optional."
+  type = number
+  default = 1
+
+}
 
 variable "head_node_ip" {
   description = "The IP address to assign to the network interface for the head node instance.  Should be from the VPC's publicly-accessible CIDR range."

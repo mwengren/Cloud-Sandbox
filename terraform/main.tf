@@ -83,7 +83,7 @@ resource "aws_subnet" "main" {
    # otherwise, per https://developer.hashicorp.com/terraform/language/functions/cidrsubnet, divide the 
    # VPC address space in 4 (via 'newbits' value of 2), and
    # use the first range of address space for the subnet (0 for netnum value) 
-   cidr_block = var.subnet_cidr != null ? var.subnet_cidr : cidrsubnet(one(data.aws_vpc.pre-provisioned[*]).cidr_block, 2, 0)
+   cidr_block = var.subnet_cidr != null ? var.subnet_cidr : cidrsubnet(one(data.aws_vpc.pre-provisioned[*]).cidr_block, 2, var.subnet_quartile - 1)
    
    # for the moment, this will vary based on var.head_node_ip presence:
    map_public_ip_on_launch = var.head_node_ip == null ? true : false
