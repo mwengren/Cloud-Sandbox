@@ -14,6 +14,8 @@ provider "aws" {
   region  = var.preferred_region
 }
 
+
+/*
 resource "aws_iam_role" "sandbox_iam_role" {
   name = "${var.nameprefix}_terraform_role"
   assume_role_policy = jsonencode(
@@ -46,6 +48,7 @@ resource "aws_iam_instance_profile" "cloud_sandbox_iam_instance_profile" {
     name = "${var.nameprefix}_terraform_role"
     role = aws_iam_role.sandbox_iam_role.name
 }
+*/
 
 resource "aws_placement_group" "cloud_sandbox_placement_group" {
   name = "${var.nameprefix}_Terraform_Placement_Group"
@@ -374,7 +377,7 @@ resource "aws_instance" "head_node" {
                 aws_efs_mount_target.mount_target_main_efs]
 
   key_name = var.key_name
-  iam_instance_profile = aws_iam_instance_profile.cloud_sandbox_iam_instance_profile.name
+  #iam_instance_profile = aws_iam_instance_profile.cloud_sandbox_iam_instance_profile.name
   user_data = data.template_file.init_instance.rendered
 
   # associate_public_ip_address = true
