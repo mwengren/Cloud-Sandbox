@@ -14,6 +14,8 @@ provider "aws" {
   region  = var.preferred_region
 }
 
+
+/*
 resource "aws_iam_role" "sandbox_iam_role" {
   name = "${var.nameprefix}_terraform_role"
   assume_role_policy = jsonencode(
@@ -46,6 +48,7 @@ resource "aws_iam_instance_profile" "cloud_sandbox_iam_instance_profile" {
     name = "${var.nameprefix}_terraform_role"
     role = aws_iam_role.sandbox_iam_role.name
 }
+*/
 
 resource "aws_placement_group" "cloud_sandbox_placement_group" {
   name = "${var.nameprefix}_Terraform_Placement_Group"
@@ -80,10 +83,11 @@ resource "aws_subnet" "main" {
    vpc_id = local.vpc.id
 
    # If a subnet_cidr variable is passed explicitly, we use that,  
-   # otherwise, divide the VPC by four and use 1/4 for a new subnet 
+   # otherwise, divide the VPC by four and use 1/4 for a new subnet
    cidr_block = var.subnet_cidr != null ? var.subnet_cidr : cidrsubnet(one(data.aws_vpc.pre-provisioned[*]).cidr_block, 2, var.subnet_quartile - 1)
    
-   map_public_ip_on_launch = true
+   # for the moment, this will vary based on var.head_node_ip presence:
+   map_public_ip_on_launch = var.head_node_ip == null ? true : false
    
    availability_zone = var.availability_zone
    
@@ -364,14 +368,15 @@ resource "aws_instance" "head_node" {
                 aws_efs_mount_target.mount_target_main_efs]
 
   key_name = var.key_name
-  iam_instance_profile = aws_iam_instance_profile.cloud_sandbox_iam_instance_profile.name
+  #iam_instance_profile = aws_iam_instance_profile.cloud_sandbox_iam_instance_profile.name
   user_data = data.template_file.init_instance.rendered
 
   # associate_public_ip_address = true
-  network_interface {
-    device_index = 0    # MUST be 0
-    network_interface_id = aws_network_interface.head_node.id
-  }
+#  network_interface {
+#    device_index = 0    # MUST be 0
+#    # network_interface_id = var.use_efa == true ? aws_network_interface.efa_network_adapter.id : aws_network_interface.standard.id
+#    network_interface_id = aws_network_interface.head_node.id
+#  }
 
   # This logic isn't perfect since some ena instance types can be in a placement group also
   placement_group = var.use_efa == true ? aws_placement_group.cloud_sandbox_placement_group.id : null
@@ -420,4 +425,22 @@ resource "aws_network_interface" "head_node" {
       Name = "${var.name_tag} Head Node Network Adapter"
       Project = var.project_tag
   }
+
+
+  #private_ips = [var.head_node_ip]
+  #private_ips = [var.head_node_ip]
+
+  # handle here or in instance create or via aws_network_interface_attachment?
+  attachment {
+    instance     = aws_instance.head_node.id
+    device_index = 1
+  }
+
 }
+
+#resource "aws_network_interface_attachment" "head_node" {
+#  instance_id          = aws_instance.head_node.id
+#  network_interface_id = aws_network_interface.head_node.id
+#  device_index         = 0
+#}
+

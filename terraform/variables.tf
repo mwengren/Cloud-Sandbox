@@ -109,6 +109,19 @@ variable "subnet_quartile" {
 
 }
 
+variable "head_node_ip" {
+  description = "The IP address to assign to the network interface for the head node instance.  Should be from the VPC's publicly-accessible CIDR range."
+  type = string
+  default = null
+  nullable = true
+
+  #validation {
+  #  condition     = var.head_node_ip == null ? true : can(cidrhost(var.head_node_ip, 0))
+  #  error_message = "The head_node_ip variable must be a valid IP address (e.g. \"137.75.95.224\")."
+  #}
+
+}
+
 variable "managed_policies" {
   description = "The attached IAM policies granting machine permissions"
   default = ["arn:aws:iam::aws:policy/AmazonEC2FullAccess",
